@@ -1,0 +1,6 @@
+{
+    "sketch": "fun-synthquencer.ino",
+    "board": "arduino:avr:nano",
+    "configuration": "cpu=atmega328old",
+    "port": "COM7"
+}
