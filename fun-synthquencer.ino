@@ -21,80 +21,48 @@ boolean myFlag = false;
 MedianFilter filterObject(10, 0);
 
 Columns newColumns(2, COLUMNS_POT_PIN, COLUMNS_BUTTON_PIN);
-Column columns[2];
 
 void setup() {
   edgar.begin(CHA);// voice, wave, pitch, env, length, mod
   edgar.setupVoice(0,SAW,49,ENVELOPE3,75,64);
-  pinMode(COLUMN1_SELECT_PIN, OUTPUT);
-  pinMode(COLUMN2_SELECT_PIN, OUTPUT);
-  digitalWrite(COLUMN1_SELECT_PIN, LOW);
-  digitalWrite(COLUMN2_SELECT_PIN, LOW);
-  pinMode(COLUMNS_POT_PIN, INPUT);
-  pinMode(COLUMNS_BUTTON_PIN, INPUT);
   pinMode(DEBUGPIN, OUTPUT);
   Serial.begin(9600);
-  Serial.println("start,hopsa");
-
-  columns[0].selectPin = COLUMN1_SELECT_PIN;
-  columns[1].selectPin = COLUMN2_SELECT_PIN;
+  Serial.println("c1,c2");
 
   newColumns[0].selectPin = COLUMN1_SELECT_PIN;
   newColumns[1].selectPin = COLUMN2_SELECT_PIN;
+  pinMode(COLUMN1_SELECT_PIN, OUTPUT);
+  pinMode(COLUMN2_SELECT_PIN, OUTPUT);
 }
 
 int colNr = -1;
 
 void loop() {
   uint32_t t = millis();
-  digitalWrite(columns[0].selectPin, LOW);
-  digitalWrite(columns[1].selectPin, LOW);
-  readColumns();
-  digitalWrite(DEBUGPIN, columns[1].enabled);
-  if (columns[colNr].enabled) {
-    digitalWrite(columns[colNr].selectPin, HIGH);
+  digitalWrite(newColumns[0].selectPin, LOW);
+  digitalWrite(newColumns[1].selectPin, LOW);
+  newColumns.read();
+  digitalWrite(DEBUGPIN, newColumns[1].enabled);
+  if (newColumns[colNr].enabled) {
+    digitalWrite(newColumns[colNr].selectPin, HIGH);
   }
   if (t - lastTime > 180) {
     colNr++;
     if (colNr > 1) colNr = 0;
-    Serial.print(colNr);
-    Serial.print(": ");
-    edgar.setPitch(0, map(columns[colNr].potValue, 0, 850, 0, 127));
-    if (columns[colNr].enabled) {
+    edgar.setPitch(0, map(newColumns[colNr].potValue, 0, 850, 0, 127));
+    if (newColumns[colNr].enabled) {
       edgar.trigger(0);
     }
-    Serial.print(map(columns[0].potValue, 0, 850, 0, 127));
+    Serial.print(newColumns[0].potValue);
     Serial.print(",");
-    Serial.println(map(columns[1].potValue, 0, 850, 0, 127));
+    Serial.println(newColumns[1].potValue);
     lastTime = t;
   }
   delay(10);
 }
 
-void readColumns() {
-  for (int i = 0; i <= 1; i++) {
-    readColumn(columns[i]);
-  }
-}
 
-void readColumn(Column &column) {
-  digitalWrite(column.selectPin, HIGH);
 
-  int readPotValue = analogRead(COLUMNS_POT_PIN); // todo: trzy odczyty i mediana?
-  column.potValues.in(readPotValue);
-  column.potValue = column.potValues.out();
-
-  int readButtonState = digitalRead(COLUMNS_BUTTON_PIN);
-  if (column.buttonState != readButtonState && (column.buttonChanged < (millis() - 50))) { // debounce
-    column.buttonState = readButtonState;
-    column.buttonChanged = millis();
-    if (readButtonState == HIGH) {
-      column.enabled = !column.enabled;
-    }
-  }
-
-  digitalWrite(column.selectPin, LOW);
-}
 
 void flick(long delayTime) {
   digitalWrite(DEBUGPIN, HIGH);
