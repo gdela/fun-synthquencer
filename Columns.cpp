@@ -23,10 +23,11 @@ class Columns {
 
   private:
   
+    Column *columns;
     const int numOfColumns;
     const int potPin;
     const int buttonPin;
-    Column *columns;
+    int highlightedNr;
 
   public:
 
@@ -34,11 +35,24 @@ class Columns {
       columns = new Column[numOfColumns];
       pinMode(potPin, INPUT);
       pinMode(buttonPin, INPUT);
-    };
+    }
+
+    void setupSelectPins(int pins[]) {
+      for (int i = 0; i < numOfColumns; i++) {
+        pinMode(pins[i], OUTPUT);
+        columns[i].selectPin = pins[i];
+      }
+    }
 
     Column &operator[](int colNr) {
       return columns[colNr];
-    };
+    }
+
+    void highlight(int colNr) {
+      digitalWrite(columns[highlightedNr].selectPin, LOW);
+      highlightedNr = colNr;
+      //digitalWrite(columns[highlightedNr].selectPin, HIGH); todo: if we want short flash to denote current column
+    }
 
     void read() {
       for (int i = 0; i < numOfColumns; i++) {
@@ -47,6 +61,7 @@ class Columns {
     }
 
     void read(Column &column) {
+      digitalWrite(columns[highlightedNr].selectPin, LOW);
       digitalWrite(column.selectPin, HIGH);
 
       int readPotValue = analogRead(potPin);
@@ -63,6 +78,7 @@ class Columns {
       }
 
       digitalWrite(column.selectPin, LOW);
+      digitalWrite(columns[highlightedNr].selectPin, columns[highlightedNr].enabled); // highlight only if enabled
     }
 
 };
