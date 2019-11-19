@@ -1,3 +1,5 @@
+#include <stdarg.h>
+#include <stdio.h>
 #include "Arduino.h"
 #include "MedianFilter.h"
 
@@ -37,11 +39,14 @@ class Columns {
       pinMode(buttonPin, INPUT);
     }
 
-    void setupSelectPins(int pins[]) {
-      for (int i = 0; i < numOfColumns; i++) {
-        pinMode(pins[i], OUTPUT);
-        columns[i].selectPin = pins[i];
+    void setupSelectPins(...) {
+      va_list pins;
+      va_start(pins, numOfColumns);
+      for (int colNr = 0; colNr < numOfColumns; colNr++) {
+        columns[colNr].selectPin = va_arg(pins, int);
+        pinMode(columns[colNr].selectPin, OUTPUT);
       }
+      va_end(pins);
     }
 
     Column &operator[](int colNr) {

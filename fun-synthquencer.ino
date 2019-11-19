@@ -28,8 +28,7 @@ void setup() {
   pinMode(DEBUGPIN, OUTPUT);
   Serial.begin(9600);
   Serial.println("c1,c2");
-  int selectPins[] = { COLUMN1_SELECT_PIN, COLUMN2_SELECT_PIN };
-  columns.setupSelectPins(selectPins);
+  columns.setupSelectPins(COLUMN1_SELECT_PIN, COLUMN2_SELECT_PIN);
 }
 
 int colNr = -1;
