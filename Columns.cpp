@@ -3,13 +3,19 @@
 #include "Arduino.h"
 #include "MedianFilter.h"
 
+const int MAX_POT_VALUE = 650; // due to voltage drop on mux, it won't be the usual 1024
+const int MAX_PITCH = 127; // max possible pitch in our synthesizer
+
 /**
  * Column of controls of a single item from the sequence: a pitch potentiometer, an on/off button and a status led.
  */
 struct Column {
   int selectPin;
-  int potValue = 0; // current potentiometer value (smoothed from last ten)
-  MedianFilter potValues = MedianFilter(10, 0); // last ten potentiometer values
+  
+  int pitch; // pitch as set on potentiometer (pot value scaled to 0-127 range)
+  int potValue = 0; // current potentiometer value (smoothed from last couple of values)
+  MedianFilter potValues = MedianFilter(21, 0); // last couple of potentiometer values
+
   boolean enabled = true; // flip-flop controlled by button
   boolean buttonState = LOW; // current button state
   long buttonChanged = 0; // timestamp of last state change
@@ -66,15 +72,25 @@ class Columns {
     }
 
     void read(Column &column) {
+      // select the column which pot value and button state will be read
       digitalWrite(columns[highlightedNr].selectPin, LOW);
       digitalWrite(column.selectPin, HIGH);
 
-      int readPotValue = analogRead(potPin);
-      column.potValues.in(readPotValue); // smooth using median from last n-values
-      column.potValue = column.potValues.out();
+      // smooth pot value to cancel noise, then calculate pitch
+      column.potValues.in(analogRead(potPin));
+      column.potValues.in(analogRead(potPin));
+      column.potValues.in(analogRead(potPin));
+      int readPotValue = column.potValues.getMean();
+      int minimumMeaningfulDifference = MAX_POT_VALUE / MAX_PITCH;
+      if (abs(column.potValue - readPotValue) >= minimumMeaningfulDifference) {
+        column.potValue = readPotValue;
+        column.pitch = map(readPotValue, 0, MAX_POT_VALUE, 0, MAX_PITCH);
+      }
 
+      // debounce button, then establish column enabled state
       int readButtonState = digitalRead(buttonPin);
-      if (column.buttonState != readButtonState && (column.buttonChanged < (millis() - 50))) { // debounce
+      boolean changedRecently = millis() - column.buttonChanged <= 50;
+      if (column.buttonState != readButtonState && !changedRecently) {
         column.buttonState = readButtonState;
         column.buttonChanged = millis();
         if (readButtonState == HIGH) {
@@ -82,8 +98,9 @@ class Columns {
         }
       }
 
+      // select the column which is highlighed, to turn led back on
       digitalWrite(column.selectPin, LOW);
-      digitalWrite(columns[highlightedNr].selectPin, columns[highlightedNr].enabled); // highlight only if enabled
+      digitalWrite(columns[highlightedNr].selectPin, columns[highlightedNr].enabled);
     }
 
 };

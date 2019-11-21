@@ -23,7 +23,7 @@ MedianFilter filterObject(10, 0);
 Columns columns(2, COLUMNS_POT_PIN, COLUMNS_BUTTON_PIN);
 
 void setup() {
-  edgar.begin(CHA);// voice, wave, pitch, env, length, mod
+  edgar.begin(CHA); // voice, wave, pitch, env, length, mod
   edgar.setupVoice(0,SAW,49,ENVELOPE3,75,64);
   pinMode(DEBUGPIN, OUTPUT);
   Serial.begin(9600);
@@ -36,17 +36,17 @@ int colNr = -1;
 void loop() {
   uint32_t t = millis();
   columns.read();
-  if (t - lastTime > 180) {
+  if (t - lastTime > 200) {
     colNr++;
     if (colNr > 1) colNr = 0;
     columns.highlight(colNr);
-    edgar.setPitch(0, map(columns[colNr].potValue, 0, 850, 0, 127));
+    edgar.setPitch(0, columns[colNr].pitch);
     if (columns[colNr].enabled) {
       edgar.trigger(0);
     }
-    Serial.print(columns[0].potValue);
+    Serial.print(columns[0].pitch);
     Serial.print(",");
-    Serial.println(columns[1].potValue);
+    Serial.println(columns[1].pitch);
     lastTime = t;
   }
   delay(10); // todo: possibly can be reduced, or even removed
