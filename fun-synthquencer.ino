@@ -4,9 +4,6 @@
 
 synth edgar;
 
-const int COLUMN1_SELECT_PIN = 4;
-const int COLUMN2_SELECT_PIN = 3;
-const int COLUMN3_SELECT_PIN = 2;
 const int MUX_ENABLE_PIN = 5;
 const int MUX_PIN_A = 4;
 const int MUX_PIN_B = 3;
@@ -31,7 +28,6 @@ void setup() {
   edgar.begin(CHA); // voice, wave, pitch, env, length, mod
   edgar.setupVoice(0,SAW,49,ENVELOPE3,75,64);
   pinMode(DEBUGPIN, OUTPUT);
-  columns.setupSelectPins(COLUMN1_SELECT_PIN, COLUMN2_SELECT_PIN, COLUMN3_SELECT_PIN);
   columns.setupMuxPins(MUX_ENABLE_PIN, MUX_PIN_A, MUX_PIN_B, MUX_PIN_C);
 }
 

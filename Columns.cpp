@@ -10,8 +10,7 @@ const int MAX_PITCH = 127; // max possible pitch in our synthesizer
  * Column of controls of a single item from the sequence: a pitch potentiometer, an on/off button and a status led.
  */
 struct Column {
-  int selectPin;
-  
+
   int pitch; // pitch as set on potentiometer (pot value scaled to 0-127 range)
   int potValue = 0; // current potentiometer value (smoothed from last couple of values)
   MedianFilter potValues = MedianFilter(21, 0); // last couple of potentiometer values
@@ -19,6 +18,7 @@ struct Column {
   boolean enabled = true; // flip-flop controlled by button
   boolean buttonState = LOW; // current button state
   long buttonChanged = 0; // timestamp of last state change
+
 };
 
 /**
@@ -60,16 +60,6 @@ class Columns {
       pinMode(muxPinA, OUTPUT);
       pinMode(muxPinB, OUTPUT);
       pinMode(muxPinC, OUTPUT);
-    }
-
-    void setupSelectPins(...) {
-      va_list pins;
-      va_start(pins, numOfColumns);
-      for (int colNr = 0; colNr < numOfColumns; colNr++) {
-        columns[colNr].selectPin = va_arg(pins, int);
-        pinMode(columns[colNr].selectPin, OUTPUT);
-      }
-      va_end(pins);
     }
 
     Column &operator[](int colNr) {
