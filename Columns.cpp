@@ -3,9 +3,6 @@
 #include "Arduino.h"
 #include "MedianFilter.h"
 
-const int MAX_POT_VALUE = 650; // due to voltage drop on mux, it won't be the usual 1024
-const int MAX_PITCH = 127; // max possible pitch in our synthesizer
-
 /**
  * Column of controls of a single item from the sequence: a pitch potentiometer, an on/off button and a status led.
  */
@@ -34,14 +31,17 @@ class Columns {
     Column *columns;
     const int numOfColumns;
 
+    int muxEnablePin;
+    int muxPinA, muxPinB, muxPinC;
+
     int highlightedColNr;
     long highlightStarted = 0;
 
     const int potPin;
     const int buttonPin;
 
-    int muxEnablePin;
-    int muxPinA, muxPinB, muxPinC;
+    const int MAX_POT_VALUE = 550; // due to voltage drop on mux, it won't be the usual 1024
+    const int MAX_PITCH = 127; // max possible pitch in our synthesizer
 
   public:
 
@@ -63,6 +63,7 @@ class Columns {
     }
 
     Column &operator[](int colNr) {
+      highlight(colNr);
       return columns[colNr];
     }
 
@@ -109,6 +110,7 @@ class Columns {
       if (abs(column.potValue - readPotValue) >= minimumMeaningfulDifference) {
         column.potValue = readPotValue;
         column.pitch = map(readPotValue, 0, MAX_POT_VALUE, 0, MAX_PITCH);
+        column.pitch = MAX_PITCH - column.pitch; // inverse
       }
       // debounce button, then establish column enabled state
       int readButtonState = digitalRead(buttonPin);
