@@ -33,9 +33,15 @@ class Columns {
   
     Column *columns;
     const int numOfColumns;
+
+    int highlightedColNr;
+    long highlightStarted = 0;
+
     const int potPin;
     const int buttonPin;
-    int highlightedNr;
+
+    int muxEnablePin;
+    int muxPinA, muxPinB, muxPinC;
 
   public:
 
@@ -43,6 +49,17 @@ class Columns {
       columns = new Column[numOfColumns];
       pinMode(potPin, INPUT);
       pinMode(buttonPin, INPUT);
+    }
+    
+    void setupMuxPins(int enablePin, int pinA, int pinB, int pinC) {
+      muxEnablePin = enablePin;
+      muxPinA = pinA;
+      muxPinB = pinB;
+      muxPinC = pinC;
+      pinMode(muxEnablePin, OUTPUT);
+      pinMode(muxPinA, OUTPUT);
+      pinMode(muxPinB, OUTPUT);
+      pinMode(muxPinC, OUTPUT);
     }
 
     void setupSelectPins(...) {
@@ -59,23 +76,40 @@ class Columns {
       return columns[colNr];
     }
 
-    void highlight(int colNr) {
-      digitalWrite(columns[highlightedNr].selectPin, LOW);
-      highlightedNr = colNr;
-      //digitalWrite(columns[highlightedNr].selectPin, HIGH); todo: if we want short flash to denote current column
+    void select(int colNr) {
+      digitalWrite(muxEnablePin, LOW);
+      digitalWrite(muxPinA, bitRead(colNr, 0));
+      digitalWrite(muxPinB, bitRead(colNr, 1));
+      digitalWrite(muxPinC, bitRead(colNr, 2));
+      digitalWrite(muxEnablePin, HIGH);
     }
 
-    void read() {
-      for (int i = 0; i < numOfColumns; i++) {
-        read(columns[i]);
+    void deselect() {
+      boolean highlightStillOn = millis() - highlightStarted <= 60;
+      if (columns[highlightedColNr].enabled && highlightStillOn) {
+        select(highlightedColNr);
+      } else {
+        digitalWrite(muxEnablePin, LOW);
+        digitalWrite(muxPinA, LOW);
+        digitalWrite(muxPinB, LOW);
+        digitalWrite(muxPinC, LOW);
       }
     }
 
-    void read(Column &column) {
-      // select the column which pot value and button state will be read
-      digitalWrite(columns[highlightedNr].selectPin, LOW);
-      digitalWrite(column.selectPin, HIGH);
+    void highlight(int colNr) {
+      highlightStarted = millis();
+      highlightedColNr = colNr;
+    }
 
+    void read() {
+      for (int colNr = 0; colNr < numOfColumns; colNr++) {
+        select(colNr);
+        read(columns[colNr]);
+      }
+      deselect();
+    }
+
+    void read(Column &column) {
       // smooth pot value to cancel noise, then calculate pitch
       column.potValues.in(analogRead(potPin));
       column.potValues.in(analogRead(potPin));
@@ -86,7 +120,6 @@ class Columns {
         column.potValue = readPotValue;
         column.pitch = map(readPotValue, 0, MAX_POT_VALUE, 0, MAX_PITCH);
       }
-
       // debounce button, then establish column enabled state
       int readButtonState = digitalRead(buttonPin);
       boolean changedRecently = millis() - column.buttonChanged <= 50;
@@ -97,10 +130,6 @@ class Columns {
           column.enabled = !column.enabled;
         }
       }
-
-      // select the column which is highlighed, to turn led back on
-      digitalWrite(column.selectPin, LOW);
-      digitalWrite(columns[highlightedNr].selectPin, columns[highlightedNr].enabled);
     }
 
 };
