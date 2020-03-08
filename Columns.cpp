@@ -43,6 +43,8 @@ class Columns {
     const int MAX_POT_VALUE = 550; // due to voltage drop on mux, it won't be the usual 1024
     const int MAX_PITCH = 127; // max possible pitch in our synthesizer
 
+    long lastRefresh = 0;
+
   public:
 
     Columns(int numOfColumns, int potPin, int buttonPin) : numOfColumns(numOfColumns), potPin(potPin), buttonPin(buttonPin) {
@@ -76,15 +78,10 @@ class Columns {
     }
 
     void deselect() {
-      boolean highlightStillOn = millis() - highlightStarted <= 60;
-      if (columns[highlightedColNr].enabled && highlightStillOn) {
-        select(highlightedColNr);
-      } else {
-        digitalWrite(muxEnablePin, LOW);
-        digitalWrite(muxPinA, LOW);
-        digitalWrite(muxPinB, LOW);
-        digitalWrite(muxPinC, LOW);
-      }
+      digitalWrite(muxEnablePin, LOW);
+      digitalWrite(muxPinA, LOW);
+      digitalWrite(muxPinB, LOW);
+      digitalWrite(muxPinC, LOW);
     }
 
     void highlight(int colNr) {
@@ -93,11 +90,22 @@ class Columns {
     }
 
     void read() {
-      for (int colNr = 0; colNr < numOfColumns; colNr++) {
-        select(colNr);
-        read(columns[colNr]);
+      // do not refresh too often as this highlights all leds temporarily
+      boolean needToRefresh = millis() - lastRefresh > 25;
+      if (needToRefresh) {
+        lastRefresh = millis();
+        for (int colNr = 0; colNr < numOfColumns; colNr++) {
+          select(colNr);
+          read(columns[colNr]);
+        }
       }
-      deselect();
+      // update led highlighting to show what has been recently played
+      boolean highlightStillOn = millis() - highlightStarted <= 75;
+      if (columns[highlightedColNr].enabled && highlightStillOn) {
+        select(highlightedColNr);
+      } else {
+        deselect();
+      }
     }
 
     void read(Column &column) {
