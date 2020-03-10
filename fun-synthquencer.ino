@@ -7,7 +7,7 @@ synth edgar;
 const int NUM_OF_COLUMNS = 8;
 const int COLUMNS_POT_PIN = A7;
 const int COLUMNS_BUTTON_PIN = 13;
-const int MUX_ENABLE_PIN = 7;
+const int MUX_INHIBIT_PIN = 7;
 const int MUX_PIN_A = 6;
 const int MUX_PIN_B = 5;
 const int MUX_PIN_C = 4;
@@ -17,8 +17,8 @@ const int DEBUGPIN = 12;
 
 void setup() {
   edgar.begin(CHA); // voice, wave, pitch, env, length, mod
-  for (int i=0; i<4; i++) edgar.setupVoice(i, TRIANGLE, 49, ENVELOPE1, 70, 64);
-  columns.setupMuxPins(MUX_ENABLE_PIN, MUX_PIN_A, MUX_PIN_B, MUX_PIN_C);
+  for (int i=0; i<4; i++) edgar.setupVoice(i, TRIANGLE, 0, ENVELOPE0, 64, 64);
+  columns.setupMuxPins(MUX_INHIBIT_PIN, MUX_PIN_A, MUX_PIN_B, MUX_PIN_C);
 }
 
 int colNr = -1;

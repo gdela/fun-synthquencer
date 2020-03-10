@@ -31,7 +31,7 @@ class Columns {
     Column *columns;
     const int numOfColumns;
 
-    int muxEnablePin;
+    int muxInhibitPin;
     int muxPinA, muxPinB, muxPinC;
 
     int highlightedColNr;
@@ -53,12 +53,12 @@ class Columns {
       pinMode(buttonPin, INPUT);
     }
     
-    void setupMuxPins(int enablePin, int pinA, int pinB, int pinC) {
-      muxEnablePin = enablePin;
+    void setupMuxPins(int inhibitPin, int pinA, int pinB, int pinC) {
+      muxInhibitPin = inhibitPin;
       muxPinA = pinA;
       muxPinB = pinB;
       muxPinC = pinC;
-      pinMode(muxEnablePin, OUTPUT);
+      pinMode(muxInhibitPin, OUTPUT);
       pinMode(muxPinA, OUTPUT);
       pinMode(muxPinB, OUTPUT);
       pinMode(muxPinC, OUTPUT);
@@ -70,18 +70,15 @@ class Columns {
     }
 
     void select(int colNr) {
-      digitalWrite(muxEnablePin, LOW);
+      digitalWrite(muxInhibitPin, HIGH);
       digitalWrite(muxPinA, bitRead(colNr, 0));
       digitalWrite(muxPinB, bitRead(colNr, 1));
       digitalWrite(muxPinC, bitRead(colNr, 2));
-      digitalWrite(muxEnablePin, HIGH);
+      digitalWrite(muxInhibitPin, LOW);
     }
 
     void deselect() {
-      digitalWrite(muxEnablePin, LOW);
-      digitalWrite(muxPinA, LOW);
-      digitalWrite(muxPinB, LOW);
-      digitalWrite(muxPinC, LOW);
+      digitalWrite(muxInhibitPin, HIGH);
     }
 
     void highlight(int colNr) {
