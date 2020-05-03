@@ -1,9 +1,8 @@
-#include "synth.h"
+#include "synth-core.h"
 #include "Columns.cpp"
 #include "Controls.cpp"
 
-// synthesizer library from https://github.com/dzlonline/the_synth
-synth edgar;
+Synth synth;
 
 const int NUM_OF_COLUMNS = 8;
 const int COLUMNS_POT_PIN = A7;
@@ -18,10 +17,11 @@ Controls controls;
 const int DEBUGPIN = 13;
 
 void setup() {
-  edgar.begin(CHA); // voice, wave, pitch, env, length, mod
-  for (int i=0; i<4; i++) edgar.setupVoice(i, SAW, 0, ENVELOPE0, 64, 64);
+  debugFlick(100);
+  synth.begin(CHB); // voice, wave, pitch, env, length, mod
+  for (int i=0; i<4; i++) synth.setupVoice(i, SAW, 0, ENVELOPE0, 64, 64);
   columns.setupMuxPins(MUX_INHIBIT_PIN, MUX_PIN_A, MUX_PIN_B, MUX_PIN_C);
-  for (int i=0; i<3; i++) debugFlick(100);
+  debugFlick(100);
 }
 
 int colNr = -1;
@@ -32,18 +32,18 @@ void loop() {
   controls.read();
   columns.read();
 
-  // play next column from he sequence
+  // play next column from the sequence
   long currTime = millis();
   if (currTime - lastTime > controls.delay) {
     if (++colNr == NUM_OF_COLUMNS) colNr = 0;
     Column column = columns[colNr];
     if (column.enabled) {
-      edgar.setWave(colNr%4, controls.wave);
-      edgar.setEnvelope(colNr%4, controls.envelope);
-      edgar.setLength(colNr%4, controls.length);
-      edgar.setMod(colNr%4, controls.mod);
-      edgar.setPitch(colNr%4, column.pitch);
-      edgar.trigger(colNr%4);
+      synth.setWave(colNr%4, controls.wave);
+      synth.setEnvelope(colNr%4, controls.envelope);
+      synth.setLength(colNr%4, controls.length);
+      synth.setMod(colNr%4, controls.mod);
+      synth.setPitch(colNr%4, column.pitch);
+      synth.trigger(colNr%4);
     }
     lastTime = currTime;
   }

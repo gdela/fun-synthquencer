@@ -9,7 +9,7 @@
 //*************************************************************************************
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
-#include "tables.h"
+#include "synth-tables.h"
 
 #define DIFF 1
 #define CHA 2
@@ -98,13 +98,13 @@ SIGNAL(TIMER1_COMPA_vect)
 	tim++;
 }
 
-class synth
+class Synth
 {
 private:
 
 public:
 
-  synth()
+  Synth()
   {
   }
 
