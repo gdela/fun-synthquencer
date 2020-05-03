@@ -38,8 +38,8 @@ class Columns {
     int highlightedColNr;
     long highlightStarted = 0;
 
-    int potPin;
-    int buttonPin;
+    int pitchPin;
+    int togglePin;
 
     const int MAX_POT_VALUE = 550; // due to voltage drop on mux, it won't be the usual 1024
     const int MAX_PITCH = 127; // max possible pitch in our synthesizer
@@ -63,11 +63,11 @@ class Columns {
       pinMode(pinC, OUTPUT);
     }
 
-    void setupInputPins(int potPin, int buttonPin) {
-      this->potPin = potPin;
-      this->buttonPin = buttonPin;
-      pinMode(potPin, INPUT);
-      pinMode(buttonPin, INPUT);
+    void setupInputPins(int pitchPin, int togglePin) {
+      this->pitchPin = pitchPin;
+      this->togglePin = togglePin;
+      pinMode(pitchPin, INPUT);
+      pinMode(togglePin, INPUT);
     }
     
     Column &operator[](int colNr) {
@@ -113,9 +113,9 @@ class Columns {
 
     void read(Column &column) {
       // smooth pot value to cancel noise, then calculate pitch
-      column.potValues.add(analogRead(potPin));
-      column.potValues.add(analogRead(potPin));
-      column.potValues.add(analogRead(potPin));
+      column.potValues.add(analogRead(pitchPin));
+      column.potValues.add(analogRead(pitchPin));
+      column.potValues.add(analogRead(pitchPin));
       int readPotValue = column.potValues.getMedian();
       int minimumMeaningfulDifference = MAX_POT_VALUE / MAX_PITCH;
       if (abs(column.potValue - readPotValue) >= minimumMeaningfulDifference) {
@@ -124,7 +124,7 @@ class Columns {
         column.pitch = MAX_PITCH - column.pitch; // inverse
       }
       // debounce button, then establish column enabled state
-      int readButtonState = digitalRead(buttonPin);
+      int readButtonState = digitalRead(togglePin);
       boolean changedRecently = millis() - column.buttonChanged <= 50;
       if (column.buttonState != readButtonState && !changedRecently) {
         column.buttonState = readButtonState;

@@ -11,7 +11,7 @@ void setup() {
   synth.begin(CHB);
   controls.setupPotPins(CONTROLS_SHAPE_PIN, CONTROLS_MODULATION_PIN, CONTROLS_TEMPO_PIN, CONTROLS_DURATION_PIN);
   columns.setupMuxPins(MUX_INHIBIT_PIN, MUX_PIN_A, MUX_PIN_B, MUX_PIN_C);
-  columns.setupInputPins(COLUMNS_POTENT_PIN, COLUMNS_BUTTON_PIN);
+  columns.setupInputPins(COLUMNS_PITCH_PIN, COLUMNS_TOGGLE_PIN);
 }
 
 int colNr = -1;
