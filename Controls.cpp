@@ -12,6 +12,9 @@ class Controls {
 
     int shapePin, modulationPin, tempoPin, durationPin;
 
+    const int MIN_POT_VAL = 0;
+    const int MAX_POT_VAL = 1023;
+
   public:
 
     int wave = 0;
@@ -36,10 +39,20 @@ class Controls {
     }
 
     void read() {
-      wave = map(analogRead(shapePin), 0, 1023, 0, 4);
-      mod = map(analogRead(modulationPin), 0, 1023, 0, 127);
-      delay = map(analogRead(tempoPin), 0, 1023, 200, 50);
-      length = map(analogRead(durationPin), 0, 1023, 0, 127);
+      int numOfWaves = 6;
+      int numOfEnvelopes = 4;
+      int shape = readPot(shapePin, 0, numOfWaves * numOfEnvelopes - 1);
+      wave = shape / numOfEnvelopes; // range 0-5
+      envelope = shape - (wave * numOfEnvelopes); // range 0-4
+
+      mod = readPot(modulationPin, 16, 112); // mod range is 0-127, no mod 64
+      if (mod >= 62 && mod <= 66) mod = 64; // make it easier to select no modulation
+      
+      delay = readPot(tempoPin, 300, 30); // delay range is 0 up to hundrets milliseconds
+      length = readPot(durationPin, 30, 90); // synth's length range is 0-127
     }
 
+    int readPot(int pin, int minOutVal, int maxOutVal) {
+      return map(analogRead(pin), MAX_POT_VAL, MIN_POT_VAL, minOutVal, maxOutVal);
+    }
 };
