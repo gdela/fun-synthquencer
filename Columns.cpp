@@ -4,7 +4,8 @@
 #include "MedianFilter.h"
 
 /**
- * Column of controls of a single item from the sequence: a pitch potentiometer, an on/off button and a status led.
+ * Column of controls of a single item from the sequence: a pitch potentiometer, an on/off button
+ * and a status led.
  */
 struct Column {
 
@@ -21,8 +22,8 @@ struct Column {
 /**
  * Whole set of columns, connected to arduino with a set of wires:
  * - three digital output pins to multiplexer, to select one of the columns
- * - common potentiometer analog input pin
- * - common button digital input pin
+ * - common analog input pin from potentiometers
+ * - common digital input pin from buttons
  */
 class Columns {
 
@@ -37,8 +38,8 @@ class Columns {
     int highlightedColNr;
     long highlightStarted = 0;
 
-    const int potPin;
-    const int buttonPin;
+    int potPin;
+    int buttonPin;
 
     const int MAX_POT_VALUE = 550; // due to voltage drop on mux, it won't be the usual 1024
     const int MAX_PITCH = 127; // max possible pitch in our synthesizer
@@ -47,23 +48,28 @@ class Columns {
 
   public:
 
-    Columns(int numOfColumns, int potPin, int buttonPin) : numOfColumns(numOfColumns), potPin(potPin), buttonPin(buttonPin) {
+    Columns(int numOfColumns) : numOfColumns(numOfColumns) {
       columns = new Column[numOfColumns];
+    }
+    
+    void setupMuxPins(int inhibitPin, int pinA, int pinB, int pinC) {
+      this->muxInhibitPin = inhibitPin;
+      this->muxPinA = pinA;
+      this->muxPinB = pinB;
+      this->muxPinC = pinC;
+      pinMode(inhibitPin, OUTPUT);
+      pinMode(pinA, OUTPUT);
+      pinMode(pinB, OUTPUT);
+      pinMode(pinC, OUTPUT);
+    }
+
+    void setupInputPins(int potPin, int buttonPin) {
+      this->potPin = potPin;
+      this->buttonPin = buttonPin;
       pinMode(potPin, INPUT);
       pinMode(buttonPin, INPUT);
     }
     
-    void setupMuxPins(int inhibitPin, int pinA, int pinB, int pinC) {
-      muxInhibitPin = inhibitPin;
-      muxPinA = pinA;
-      muxPinB = pinB;
-      muxPinC = pinC;
-      pinMode(muxInhibitPin, OUTPUT);
-      pinMode(muxPinA, OUTPUT);
-      pinMode(muxPinB, OUTPUT);
-      pinMode(muxPinC, OUTPUT);
-    }
-
     Column &operator[](int colNr) {
       highlight(colNr);
       return columns[colNr];

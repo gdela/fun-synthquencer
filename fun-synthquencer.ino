@@ -1,26 +1,19 @@
+#include "Pins.cpp"
 #include "synth-core.h"
 #include "Columns.cpp"
 #include "Controls.cpp"
 
 Synth synth;
-
-const int NUM_OF_COLUMNS = 8;
-const int COLUMNS_POT_PIN = A7;
-const int COLUMNS_BUTTON_PIN = 7;
-const int MUX_INHIBIT_PIN = 2;
-const int MUX_PIN_A = 4;
-const int MUX_PIN_B = 5;
-const int MUX_PIN_C = 6;
-Columns columns(NUM_OF_COLUMNS, COLUMNS_POT_PIN, COLUMNS_BUTTON_PIN);
+Columns columns(NUM_OF_COLUMNS);
 Controls controls;
-
-const int DEBUGPIN = 13;
 
 void setup() {
   debugFlick(100);
   synth.begin(CHB); // voice, wave, pitch, env, length, mod
   for (int i=0; i<4; i++) synth.setupVoice(i, SAW, 0, ENVELOPE0, 64, 64);
   columns.setupMuxPins(MUX_INHIBIT_PIN, MUX_PIN_A, MUX_PIN_B, MUX_PIN_C);
+  columns.setupInputPins(COLUMNS_POTENT_PIN, COLUMNS_BUTTON_PIN);
+  controls.setupPotPins(CONTROLS_SHAPE_PIN, CONTROLS_MODULATION_PIN, CONTROLS_TEMPO_PIN, CONTROLS_DURATION_PIN);
   debugFlick(100);
 }
 
@@ -55,9 +48,9 @@ void loop() {
 
 // useful for debuging, blink a led
 void debugFlick(long delayTime) {
-  pinMode(DEBUGPIN, OUTPUT);
-  digitalWrite(DEBUGPIN, HIGH);
+  pinMode(DEBUG_PIN, OUTPUT);
+  digitalWrite(DEBUG_PIN, HIGH);
   delay(delayTime / 2);
-  digitalWrite(DEBUGPIN, LOW);
+  digitalWrite(DEBUG_PIN, LOW);
   delay(delayTime / 2);
 }
