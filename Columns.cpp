@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include "Arduino.h"
-#include "MedianFilter.h"
+#include <RunningMedian.h>
 
 /**
  * Column of controls of a single item from the sequence: a pitch potentiometer, an on/off button
@@ -11,7 +11,7 @@ struct Column {
 
   int pitch; // pitch as set on potentiometer (pot value scaled to 0-127 range)
   int potValue = 0; // current potentiometer value (smoothed from last couple of values)
-  MedianFilter potValues = MedianFilter(21, 0); // last couple of potentiometer values
+  RunningMedian potValues = RunningMedian(21); // last couple of potentiometer values
 
   boolean enabled = true; // flip-flop controlled by button
   boolean buttonState = LOW; // current button state
@@ -113,10 +113,10 @@ class Columns {
 
     void read(Column &column) {
       // smooth pot value to cancel noise, then calculate pitch
-      column.potValues.in(analogRead(potPin));
-      column.potValues.in(analogRead(potPin));
-      column.potValues.in(analogRead(potPin));
-      int readPotValue = column.potValues.getMean();
+      column.potValues.add(analogRead(potPin));
+      column.potValues.add(analogRead(potPin));
+      column.potValues.add(analogRead(potPin));
+      int readPotValue = column.potValues.getMedian();
       int minimumMeaningfulDifference = MAX_POT_VALUE / MAX_PITCH;
       if (abs(column.potValue - readPotValue) >= minimumMeaningfulDifference) {
         column.potValue = readPotValue;
