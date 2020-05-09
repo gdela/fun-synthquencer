@@ -4,7 +4,6 @@
             "name": "Win32",
             "includePath": [
                 "C:\\Users\\Wojtek\\Documents\\Arduino\\libraries\\Adafruit_NeoPixel",
-                "C:\\Users\\Wojtek\\Documents\\Arduino\\libraries\\RunningMedian",
                 "C:/Arduino/tools/**",
                 "C:/Arduino/hardware/arduino/avr/**",
                 "C:/Arduino/hardware/tools/avr/avr/include",
